@@ -1,0 +1,33 @@
+.DS_Store
+.idea
+*.local
+*.log
+/.vscode/
+dist
+dist-ssr
+node_modules
+.eslintcache
+
+# npm pack output
+*.tgz
+*.tsbuildinfo
+
+# env files (never commit real secrets)
+.env
+.env.local
+.env*.local
+agent/.env
+
+# Convex
+.convex
+
+# Internal build scaffolding — never committed
+/CLAUDE.md
+/AGENTS.md
+/BUILD_PLAN.md
+/BUILD_LOG.md
+/.claude/
+/.agents/
+/skills-lock.json
+
+.vercel
