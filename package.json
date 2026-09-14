@@ -14,7 +14,7 @@
   },
   "dependencies": {
     "convex": "^1.45.0",
-    "convex-livekit": "^0.0.5",
+    "convex-livekit": "^0.0.6",
     "react": "^19.3.0",
     "react-dom": "^19.3.0"
   },

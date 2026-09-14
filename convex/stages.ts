@@ -82,6 +82,16 @@ export const listStages = query({
 export const startBroadcast = action({
   args: { roomName: v.string() },
   handler: async (ctx, args) => {
+    // LiveKit Cloud auto-closes a room once it has been empty for its
+    // emptyTimeout window. A stage that was created but never joined (no
+    // participant, no ingress) will have already been torn down on
+    // LiveKit's side by the time someone clicks "Start broadcast", and
+    // RoomCompositeEgress 404s against a room that doesn't exist.
+    // CreateRoom is idempotent — it returns the existing room unchanged if
+    // one is already live, so this just guarantees egress has a room to
+    // composite.
+    await livekit.createRoom(ctx, { name: args.roomName });
+
     const restreamUrl = process.env.RESTREAM_RTMP_URL;
     // LiveKit Cloud has no default storage - file egress only resolves once
     // the project has its own S3/GCS/Azure bucket configured in the Cloud
