@@ -83,9 +83,24 @@ export const startBroadcast = action({
   args: { roomName: v.string() },
   handler: async (ctx, args) => {
     const restreamUrl = process.env.RESTREAM_RTMP_URL;
+    // LiveKit Cloud has no default storage - file egress only resolves once
+    // the project has its own S3/GCS/Azure bucket configured in the Cloud
+    // dashboard, and StartRoomCompositeEgress rejects a request with no
+    // usable output at all. Recording is opt-in via RECORDING_ENABLED (set
+    // it only after configuring that storage) so a restream-only setup
+    // (RESTREAM_RTMP_URL alone) still works without hitting that error.
+    const recordingEnabled = process.env.RECORDING_ENABLED === "true";
+
+    if (!restreamUrl && !recordingEnabled) {
+      throw new Error(
+        "No egress output configured. Set RESTREAM_RTMP_URL to a real RTMP destination, " +
+          "or configure cloud storage in the LiveKit Cloud dashboard and set RECORDING_ENABLED=true.",
+      );
+    }
+
     return await livekit.startRoomCompositeEgress(ctx, {
       roomName: args.roomName,
-      filepath: `recordings/${args.roomName}-{time}.mp4`,
+      filepath: recordingEnabled ? `recordings/${args.roomName}-{time}.mp4` : undefined,
       streamUrls: restreamUrl ? [restreamUrl] : undefined,
     });
   },

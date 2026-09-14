@@ -521,6 +521,35 @@ input::placeholder {
   50% { opacity: 0.45; }
 }
 
+/* ─── Callouts ───────────────────────────────────────────────────────────── */
+
+.callout {
+  border-radius: var(--radius-sm);
+  padding: 0.65rem 0.8rem;
+  font-size: 0.8rem;
+  line-height: 1.5;
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+
+.callout code {
+  font-size: 0.78rem;
+  word-break: break-all;
+}
+
+.callout-bad {
+  background: var(--bad-soft);
+  border: 1px solid rgba(255, 92, 92, 0.35);
+  color: var(--bad);
+}
+
+.callout-good {
+  background: var(--good-soft);
+  border: 1px solid rgba(52, 199, 120, 0.35);
+  color: var(--text);
+}
+
 /* ─── Empty state ────────────────────────────────────────────────────────── */
 
 .empty {

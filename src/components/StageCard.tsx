@@ -22,10 +22,22 @@ type Stage = {
   }[];
 };
 
+function errorMessage(err: unknown): string {
+  if (!(err instanceof Error)) return String(err);
+  // Convex wraps the thrown server error in a lot of stack/request-id
+  // boilerplate — the actual message is the first line.
+  return err.message.split("\n")[0];
+}
+
 export function StageCard({ stage }: { stage: Stage }) {
   const [managingIngress, setManagingIngress] = useState(false);
   const [identity, setIdentity] = useState("");
   const [inputType, setInputType] = useState<InputType>("rtmp");
+  const [created, setCreated] = useState<{ ingressId: string; url?: string; streamKey?: string } | null>(
+    null,
+  );
+  const [error, setError] = useState<string | null>(null);
+  const [pending, setPending] = useState(false);
 
   const startBroadcast = useAction(api.stages.startBroadcast);
   const stopBroadcast = useAction(api.stages.stopBroadcast);
@@ -37,9 +49,28 @@ export function StageCard({ stage }: { stage: Stage }) {
   const isLive = stage.room?.status === "started";
   const joinedCount = stage.participants.filter((p) => p.state === "joined").length;
 
+  async function run<T>(fn: () => Promise<T>) {
+    setPending(true);
+    setError(null);
+    try {
+      await fn();
+    } catch (err) {
+      setError(errorMessage(err));
+    } finally {
+      setPending(false);
+    }
+  }
+
   async function addSpeaker() {
-    await createSpeakerIngress({ roomName: stage.roomName, participantIdentity: identity, inputType });
-    setIdentity("");
+    await run(async () => {
+      const result = await createSpeakerIngress({
+        roomName: stage.roomName,
+        participantIdentity: identity,
+        inputType,
+      });
+      setCreated(result);
+      setIdentity("");
+    });
   }
 
   return (
@@ -58,6 +89,12 @@ export function StageCard({ stage }: { stage: Stage }) {
         <Stat label="Age" value={relativeTime(stage.createdAt)} />
       </div>
 
+      {error && (
+        <div className="callout callout-bad">
+          {error}
+        </div>
+      )}
+
       <div className="stage-section">
         <span className="stage-section-label">Broadcast</span>
         <div className="btn-row">
@@ -67,7 +104,8 @@ export function StageCard({ stage }: { stage: Stage }) {
               <Button
                 variant="danger"
                 size="sm"
-                onClick={() => void stopBroadcast({ egressId: liveEgress.egressId })}
+                disabled={pending}
+                onClick={() => void run(() => stopBroadcast({ egressId: liveEgress.egressId }))}
               >
                 Stop broadcast
               </Button>
@@ -76,7 +114,8 @@ export function StageCard({ stage }: { stage: Stage }) {
             <Button
               variant="primary"
               size="sm"
-              onClick={() => void startBroadcast({ roomName: stage.roomName })}
+              disabled={pending}
+              onClick={() => void run(() => startBroadcast({ roomName: stage.roomName }))}
             >
               Start broadcast
             </Button>
@@ -96,13 +135,38 @@ export function StageCard({ stage }: { stage: Stage }) {
               <Button
                 variant="ghost"
                 size="sm"
-                onClick={() => void deleteSpeakerIngress({ ingressId: ingress.ingressId })}
+                disabled={pending}
+                onClick={() =>
+                  void run(() => deleteSpeakerIngress({ ingressId: ingress.ingressId }))
+                }
               >
                 Remove
               </Button>
             </span>
           </div>
         ))}
+
+        {created && (
+          <div className="callout callout-good">
+            <div>
+              Created <code>{created.ingressId}</code> — copy these now, the stream key is shown
+              only once:
+            </div>
+            {created.url && (
+              <div>
+                url: <code>{created.url}</code>
+              </div>
+            )}
+            {created.streamKey && (
+              <div>
+                key: <code>{created.streamKey}</code>
+              </div>
+            )}
+            <Button variant="ghost" size="sm" onClick={() => setCreated(null)}>
+              Dismiss
+            </Button>
+          </div>
+        )}
 
         {managingIngress ? (
           <div className="field-row" style={{ marginTop: "0.7rem" }}>
@@ -120,7 +184,12 @@ export function StageCard({ stage }: { stage: Stage }) {
                 <option value="url">URL</option>
               </select>
             </Field>
-            <Button variant="secondary" size="sm" disabled={!identity} onClick={() => void addSpeaker()}>
+            <Button
+              variant="secondary"
+              size="sm"
+              disabled={!identity || pending}
+              onClick={() => void addSpeaker()}
+            >
               Add
             </Button>
           </div>
@@ -135,7 +204,8 @@ export function StageCard({ stage }: { stage: Stage }) {
         <Button
           variant="danger"
           size="sm"
-          onClick={() => void deleteStage({ roomName: stage.roomName })}
+          disabled={pending}
+          onClick={() => void run(() => deleteStage({ roomName: stage.roomName }))}
         >
           Delete stage
         </Button>
