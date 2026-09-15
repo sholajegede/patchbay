@@ -13,5 +13,9 @@ export default defineSchema({
     roomName: v.string(),
     displayName: v.string(),
     createdAt: v.number(),
+    // Set by the stage-manager agent worker (see agent/src/index.ts) when a
+    // live stage's real speakers have gone quiet for too long; cleared the
+    // moment someone speaks again. Absent when there's nothing to flag.
+    deadAirSince: v.optional(v.number()),
   }).index("by_roomName", ["roomName"]),
 });
