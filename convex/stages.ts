@@ -162,6 +162,25 @@ export const getViewerToken = action({
   },
 });
 
+// ─── Demo broadcaster: publish a synthetic feed straight from the browser ──
+
+// Mints a publish-only token so a visitor's own browser tab can act as an
+// encoder — no OBS, no ffmpeg, no server-side process to keep alive. Used
+// by the "Simulate a live broadcast" button, which captures a canvas
+// animation and a tone as real media tracks and publishes them here (see
+// src/lib/syntheticMedia.ts and src/components/DemoBroadcaster.tsx).
+export const getPublisherToken = action({
+  args: { roomName: v.string(), identity: v.string() },
+  handler: async (_ctx, args) => {
+    return await livekit.createRoomToken({
+      roomName: args.roomName,
+      identity: args.identity,
+      canPublish: true,
+      canSubscribe: false,
+    });
+  },
+});
+
 // ─── Speaker ingress: bring an external encoder into a stage ──────────────
 
 export const createSpeakerIngress = action({
