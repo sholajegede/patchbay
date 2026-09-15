@@ -3,7 +3,7 @@ import { useAction } from "convex/react";
 import { api } from "../../convex/_generated/api";
 import { Button, Badge, StatusDot, Field, TextInput, Stat } from "./ui";
 import { StageVideo } from "./StageVideo";
-import { relativeTime, egressStatusTone, ingressStateTone, isEgressLive } from "../lib/format";
+import { relativeTime, timeSince, egressStatusTone, ingressStateTone, isEgressLive } from "../lib/format";
 
 type InputType = "rtmp" | "whip" | "url";
 
@@ -13,6 +13,7 @@ type Stage = {
   displayName: string;
   room: { status: "started" | "finished"; numParticipants?: number } | null;
   createdAt: number;
+  deadAirSince?: number;
   participants: { identity: string; state: "joined" | "left" }[];
   egressJobs: { egressId: string; status: string }[];
   ingressEndpoints: {
@@ -83,6 +84,13 @@ export function StageCard({ stage }: { stage: Stage }) {
         </span>
         {liveEgress ? <Badge tone="live">on air</Badge> : <Badge>{isLive ? "open" : "idle"}</Badge>}
       </div>
+
+      {isLive && stage.deadAirSince && (
+        <div className="callout callout-bad">
+          Dead air for {timeSince(stage.deadAirSince)} — the stage-manager
+          agent hasn't heard a real speaker.
+        </div>
+      )}
 
       {isLive && <StageVideo roomName={stage.roomName} />}
 
