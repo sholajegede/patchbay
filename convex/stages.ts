@@ -56,6 +56,15 @@ export const deleteStage = action({
 // convex-livekit already tracks reactively — room status, live participant
 // count, in-flight egress, and connected ingress endpoints — so the control
 // room UI is one query away from a full live picture of every stage.
+// RoomCompositeEgress joins as a hidden "EG_..." participant purely to
+// composite the room, and the control room's own video preview joins as a
+// subscribe-only "viewer-..." participant (see getViewerToken below) —
+// neither is a real speaker, so both are filtered out before the stage
+// grid counts who's actually live.
+function isRealSpeaker(identity: string): boolean {
+  return !identity.startsWith("EG_") && !identity.startsWith("viewer-");
+}
+
 export const listStages = query({
   args: {},
   handler: async (ctx) => {
@@ -68,7 +77,13 @@ export const listStages = query({
           livekit.listEgressByRoom(ctx, { roomName: stage.roomName }),
           livekit.listIngressByRoom(ctx, { roomName: stage.roomName }),
         ]);
-        return { ...stage, room, participants, egressJobs, ingressEndpoints };
+        return {
+          ...stage,
+          room,
+          participants: participants.filter((p) => isRealSpeaker(p.identity)),
+          egressJobs,
+          ingressEndpoints,
+        };
       }),
     );
   },
@@ -120,6 +135,30 @@ export const stopBroadcast = action({
   args: { egressId: v.string() },
   handler: async (ctx, args) => {
     return await livekit.stopEgress(ctx, args);
+  },
+});
+
+// ─── Control-room viewer: watch a stage's live feed in the browser ────────
+
+// Mints a subscribe-only token so the control room UI can render the room's
+// actual video/audio, not just its metadata. "viewer-" identities are
+// filtered out of the activity feed (see convex/history.ts) since they're
+// control-room observers, not speakers — and out of the stage grid's own
+// live participant count for the same reason.
+export const getViewerToken = action({
+  args: { roomName: v.string() },
+  handler: async (_ctx, args) => {
+    // Unlike createRoom/startRoomCompositeEgress, minting a token touches
+    // no database, so it needs no ctx.
+    return await livekit.createRoomToken({
+      roomName: args.roomName,
+      identity: `viewer-${crypto.randomUUID()}`,
+      canPublish: false,
+      canSubscribe: true,
+      // Generous TTL — this token only gates the initial connection, and a
+      // control-room viewer may reasonably keep a stage open for a while.
+      ttlSeconds: 4 * 60 * 60,
+    });
   },
 });
 
