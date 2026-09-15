@@ -13,8 +13,11 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@livekit/components-react": "^2.9.24",
+    "@livekit/components-styles": "^1.2.0",
     "convex": "^1.45.0",
     "convex-livekit": "^0.0.7",
+    "livekit-client": "^2.22.3",
     "react": "^19.3.0",
     "react-dom": "^19.3.0"
   },
