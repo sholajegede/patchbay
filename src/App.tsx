@@ -3,6 +3,7 @@ import { useAction, useQuery } from "convex/react";
 import { api } from "../convex/_generated/api";
 import { Card, Field, TextInput, Button, Empty } from "./components/ui";
 import { StageCard } from "./components/StageCard";
+import { HistoryView } from "./components/HistoryView";
 
 function CreateStageForm() {
   const [roomName, setRoomName] = useState("");
@@ -43,6 +44,7 @@ function CreateStageForm() {
 export default function App() {
   const stages = useQuery(api.stages.listStages, {});
   const liveCount = stages?.filter((s) => s.room?.status === "started").length ?? 0;
+  const [tab, setTab] = useState<"stages" | "history">("stages");
 
   return (
     <div className="shell">
@@ -75,21 +77,36 @@ export default function App() {
       </section>
 
       <main className="main">
-        <CreateStageForm />
-
-        <div className="section-head" style={{ marginTop: "2rem" }}>
-          <h2>Stages</h2>
-          <span className="count">{stages ? `${stages.length} total` : ""}</span>
+        <div className="tabs">
+          <button className={`tab ${tab === "stages" ? "active" : ""}`} onClick={() => setTab("stages")}>
+            Stages
+          </button>
+          <button className={`tab ${tab === "history" ? "active" : ""}`} onClick={() => setTab("history")}>
+            History
+          </button>
         </div>
 
-        {stages === undefined ? null : stages.length === 0 ? (
-          <Empty>No stages yet — create one above to bring it live.</Empty>
+        {tab === "stages" ? (
+          <>
+            <CreateStageForm />
+
+            <div className="section-head" style={{ marginTop: "2rem" }}>
+              <h2>Stages</h2>
+              <span className="count">{stages ? `${stages.length} total` : ""}</span>
+            </div>
+
+            {stages === undefined ? null : stages.length === 0 ? (
+              <Empty>No stages yet — create one above to bring it live.</Empty>
+            ) : (
+              <div className="stage-grid">
+                {stages.map((stage) => (
+                  <StageCard key={stage._id} stage={stage} />
+                ))}
+              </div>
+            )}
+          </>
         ) : (
-          <div className="stage-grid">
-            {stages.map((stage) => (
-              <StageCard key={stage._id} stage={stage} />
-            ))}
-          </div>
+          <HistoryView />
         )}
       </main>
     </div>

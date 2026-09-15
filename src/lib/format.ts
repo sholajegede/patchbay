@@ -33,3 +33,14 @@ export function ingressStateTone(state?: string): Tone {
   if (state === "ENDPOINT_BUFFERING") return "pending";
   return "neutral";
 }
+
+export function formatDuration(ms: number): string {
+  const sec = Math.floor(ms / 1000);
+  if (sec < 60) return `${sec}s`;
+  const min = Math.floor(sec / 60);
+  const remSec = sec % 60;
+  if (min < 60) return remSec ? `${min}m ${remSec}s` : `${min}m`;
+  const hr = Math.floor(min / 60);
+  const remMin = min % 60;
+  return remMin ? `${hr}h ${remMin}m` : `${hr}h`;
+}
