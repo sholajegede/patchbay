@@ -198,6 +198,34 @@ code {
   color: var(--text-faint);
 }
 
+/* ─── Demo broadcaster ───────────────────────────────────────────────────── */
+
+.demo-broadcaster {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1.25rem;
+  flex-wrap: wrap;
+  background: linear-gradient(135deg, var(--accent-soft), transparent);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-lg);
+  padding: 1.1rem 1.4rem;
+  margin-bottom: 1rem;
+}
+
+.demo-broadcaster-copy strong {
+  display: block;
+  font-size: 0.95rem;
+  margin-bottom: 0.2rem;
+}
+
+.demo-broadcaster-copy p {
+  margin: 0;
+  color: var(--text-dim);
+  font-size: 0.85rem;
+  max-width: 480px;
+}
+
 /* ─── Cards ──────────────────────────────────────────────────────────────── */
 
 .card {
