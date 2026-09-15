@@ -4,6 +4,7 @@ import { api } from "../convex/_generated/api";
 import { Card, Field, TextInput, Button, Empty } from "./components/ui";
 import { StageCard } from "./components/StageCard";
 import { HistoryView } from "./components/HistoryView";
+import { DemoBroadcaster } from "./components/DemoBroadcaster";
 
 function CreateStageForm() {
   const [roomName, setRoomName] = useState("");
@@ -88,6 +89,8 @@ export default function App() {
 
         {tab === "stages" ? (
           <>
+            <DemoBroadcaster />
+
             <CreateStageForm />
 
             <div className="section-head" style={{ marginTop: "2rem" }}>
