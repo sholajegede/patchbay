@@ -8,6 +8,7 @@
  * @module
  */
 
+import type * as history from "../history.js";
 import type * as http from "../http.js";
 import type * as lib_livekit from "../lib/livekit.js";
 import type * as stages from "../stages.js";
@@ -19,6 +20,7 @@ import type {
 } from "convex/server";
 
 declare const fullApi: ApiFromModules<{
+  history: typeof history;
   http: typeof http;
   "lib/livekit": typeof lib_livekit;
   stages: typeof stages;
