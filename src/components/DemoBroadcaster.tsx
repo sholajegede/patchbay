@@ -1,4 +1,4 @@
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useAction } from "convex/react";
 import { Room, Track } from "livekit-client";
 import { api } from "../../convex/_generated/api";
@@ -29,6 +29,13 @@ export function DemoBroadcaster() {
 
   const createStage = useAction(api.stages.createStage);
   const getPublisherToken = useAction(api.stages.getPublisherToken);
+
+  useEffect(() => {
+    return () => {
+      roomRef.current?.disconnect();
+      mediaRef.current?.stop();
+    };
+  }, []);
 
   async function start() {
     if (!SERVER_URL) {
