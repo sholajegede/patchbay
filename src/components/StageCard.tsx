@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useAction } from "convex/react";
 import { api } from "../../convex/_generated/api";
 import { Button, Badge, StatusDot, Field, TextInput, Stat } from "./ui";
+import { StageVideo } from "./StageVideo";
 import { relativeTime, egressStatusTone, ingressStateTone, isEgressLive } from "../lib/format";
 
 type InputType = "rtmp" | "whip" | "url";
@@ -82,6 +83,8 @@ export function StageCard({ stage }: { stage: Stage }) {
         </span>
         {liveEgress ? <Badge tone="live">on air</Badge> : <Badge>{isLive ? "open" : "idle"}</Badge>}
       </div>
+
+      {isLive && <StageVideo roomName={stage.roomName} />}
 
       <div className="stage-stats">
         <Stat label="Live" value={joinedCount} />

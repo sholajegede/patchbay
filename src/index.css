@@ -224,6 +224,39 @@ code {
   gap: 1rem;
 }
 
+/* ─── Live video preview ────────────────────────────────────────────────── */
+
+.stage-video {
+  height: 200px;
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  background: #000;
+  border: 1px solid var(--border);
+}
+
+.stage-video-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 2px;
+  height: 100%;
+}
+
+.stage-video-grid[data-count="1"] {
+  grid-template-columns: 1fr;
+}
+
+.stage-video-empty {
+  height: 200px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  border-radius: var(--radius-md);
+  border: 1px dashed var(--border-strong);
+  color: var(--text-faint);
+  font-size: 0.8rem;
+}
+
 .stage-card {
   background: var(--surface);
   border: 1px solid var(--border);
