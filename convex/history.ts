@@ -88,12 +88,17 @@ function describeEvent(
   });
 
   // RoomCompositeEgress joins the room as a hidden participant (identity
-  // "EG_..."), purely to composite it, and the control room's own video
-  // preview joins as a subscribe-only "viewer-..." participant — neither is
-  // a real speaker. The egress join/leave is bookkeeping already
-  // represented by the egress_* events below; the viewer join/leave isn't
+  // "EG_..."), purely to composite it; the control room's own video preview
+  // joins as a subscribe-only "viewer-..." participant; the "Simulate a
+  // live broadcast" button joins as "demo-broadcaster-...". None of these
+  // are a real speaker. The egress join/leave is bookkeeping already
+  // represented by the egress_* events below; the other two aren't
   // newsworthy at all.
-  if (identity?.startsWith("EG_") || identity?.startsWith("viewer-")) {
+  if (
+    identity?.startsWith("EG_") ||
+    identity?.startsWith("viewer-") ||
+    identity?.startsWith("demo-broadcaster-")
+  ) {
     return null;
   }
 
