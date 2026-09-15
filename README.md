@@ -121,3 +121,24 @@ cd agent && npm run dev  # the stage-manager agent worker
 ```
 
 Open the printed local URL. Create a stage, or click "Simulate a live broadcast" to see one go live with no other setup.
+
+## Deploying
+
+Patchbay has three separate pieces to deploy. Treat production as its own LiveKit Cloud project and its own Convex deployment, kept apart from dev.
+
+**Frontend (Vercel).** Push the repo to GitHub, then import it in Vercel. Set `VITE_CONVEX_URL` and `VITE_LIVEKIT_URL` to the production values in the Vercel project's environment variables. Vercel picks up the existing `npm run build` script with no extra config.
+
+**Backend (Convex).** Run `npx convex deploy` to push functions and schema to a production deployment. Set the same env vars there with `npx convex env set --prod`, pointed at the production LiveKit project and RTMP target.
+
+**LiveKit Cloud.** Create a second LiveKit Cloud project for production. Point its webhook at the production Convex site URL. Keep the dev project for local work, so a local test never touches a production room.
+
+**Stage-manager agent.** The agent is a long-running Node worker, not a serverless function, so it needs a host that keeps a process alive: Fly.io, Render, or a small VPS all work. Build it with `npm run build` in `agent/`, then run `npm start` with the production env vars set. LiveKit Cloud dispatches a job to the worker for every room that starts, so one running instance covers every stage.
+
+## Standing on convex-livekit
+
+Building Patchbay found and fixed two real issues in convex-livekit itself:
+
+- Every client action was typed against an empty schema. This broke any app with its own tables.
+- The webhook payload casing was documented wrong. LiveKit sends camelCase, not snake_case.
+
+Both fixes shipped in convex-livekit's own release history.
