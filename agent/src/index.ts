@@ -17,6 +17,17 @@ import {
 import { ConvexHttpClient } from "convex/browser";
 import { anyApi } from "convex/server";
 
+// `tsx watch` doesn't read `.env` files on its own, and the LiveKit worker
+// framework's own child-process forking (for its built-in local turn
+// detection model) breaks under `node --env-file`, so this loads it
+// in-process instead. A missing file is fine in production, where the
+// hosting platform sets real env vars.
+try {
+  process.loadEnvFile(fileURLToPath(new URL("../.env", import.meta.url)));
+} catch {
+  // No .env file — expected in production.
+}
+
 const { SpeechEventType } = sttNamespace;
 
 // How long a stage can go without any real speaker's voice before the
@@ -83,6 +94,10 @@ export default defineAgent({
               event.type === SpeechEventType.FINAL_TRANSCRIPT
             ) {
               lastSpeechAt.set(identity, Date.now());
+            }
+            if (event.type === SpeechEventType.FINAL_TRANSCRIPT) {
+              const text = event.alternatives?.[0]?.text;
+              if (text) console.log(`[${identity}] ${text}`);
             }
           }
         } catch (err) {
