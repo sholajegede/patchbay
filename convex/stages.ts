@@ -1,5 +1,5 @@
 import { v } from "convex/values";
-import { action, internalMutation, query } from "./_generated/server";
+import { action, internalMutation, mutation, query } from "./_generated/server";
 import { internal } from "./_generated/api";
 import { livekit } from "./lib/livekit";
 
@@ -185,6 +185,26 @@ export const getPublisherToken = action({
       canPublish: true,
       canSubscribe: false,
     });
+  },
+});
+
+// ─── Stage-manager agent: dead-air alerts ──────────────────────────────────
+
+// Called by the stage-manager agent worker (agent/src/index.ts), which
+// transcribes every real speaker's audio and watches for silence. Surfaced
+// directly on the stage card so a producer sees a stage has gone quiet
+// before a viewer would have to tell them.
+export const reportDeadAir = mutation({
+  args: { roomName: v.string(), active: v.boolean() },
+  returns: v.null(),
+  handler: async (ctx, args) => {
+    const stage = await ctx.db
+      .query("stages")
+      .withIndex("by_roomName", (q) => q.eq("roomName", args.roomName))
+      .first();
+    if (!stage) return null;
+    await ctx.db.patch(stage._id, { deadAirSince: args.active ? Date.now() : undefined });
+    return null;
   },
 });
 
