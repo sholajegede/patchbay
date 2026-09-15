@@ -34,6 +34,14 @@ export function ingressStateTone(state?: string): Tone {
   return "neutral";
 }
 
+// Wraps the Date.now() read so components never call it directly during
+// render (React's purity rule flags that) — this is the only place it
+// happens, and it's already an impure helper by nature (relativeTime above
+// does the same).
+export function timeSince(ms: number): string {
+  return formatDuration(Date.now() - ms);
+}
+
 export function formatDuration(ms: number): string {
   const sec = Math.floor(ms / 1000);
   if (sec < 60) return `${sec}s`;
