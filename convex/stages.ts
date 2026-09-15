@@ -57,12 +57,17 @@ export const deleteStage = action({
 // count, in-flight egress, and connected ingress endpoints — so the control
 // room UI is one query away from a full live picture of every stage.
 // RoomCompositeEgress joins as a hidden "EG_..." participant purely to
-// composite the room, and the control room's own video preview joins as a
-// subscribe-only "viewer-..." participant (see getViewerToken below) —
-// neither is a real speaker, so both are filtered out before the stage
-// grid counts who's actually live.
+// composite the room, the control room's own video preview joins as a
+// subscribe-only "viewer-..." participant (see getViewerToken below), and
+// the demo broadcaster joins as "demo-broadcaster-..." (see
+// getPublisherToken below) — none of these are a real speaker, so all three
+// are filtered out before the stage grid counts who's actually live.
 function isRealSpeaker(identity: string): boolean {
-  return !identity.startsWith("EG_") && !identity.startsWith("viewer-");
+  return (
+    !identity.startsWith("EG_") &&
+    !identity.startsWith("viewer-") &&
+    !identity.startsWith("demo-broadcaster-")
+  );
 }
 
 export const listStages = query({
@@ -169,6 +174,8 @@ export const getViewerToken = action({
 // by the "Simulate a live broadcast" button, which captures a canvas
 // animation and a tone as real media tracks and publishes them here (see
 // src/lib/syntheticMedia.ts and src/components/DemoBroadcaster.tsx).
+// "demo-broadcaster-" identities are filtered out of live counts and the
+// activity feed the same way "viewer-" and "EG_" ones are.
 export const getPublisherToken = action({
   args: { roomName: v.string(), identity: v.string() },
   handler: async (_ctx, args) => {
